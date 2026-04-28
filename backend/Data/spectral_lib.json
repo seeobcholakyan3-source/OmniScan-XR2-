@@ -1,1 +1,82 @@
-404: Not Found
+{
+
+  "minerals": [
+    {
+
+      "name": "Native Gold (Alteration Halo)",
+
+      "indicator_minerals": ["Alunite", "Kaolinite"],
+
+      "primary_band_um": 2.16,
+
+      "secondary_band_um": 2.20,
+
+      "absorption_depth_min": 0.08,
+
+      "fwhm_threshold_nm": 25.0,
+
+      "ratio_logic": "SWIR1 / SWIR2",
+
+      "probability_weight": 0.92,
+
+      "hex_color": "#FFD700"
+
+    },
+
+    {
+
+      "name": "Kimberlite (Diamond Indicator)",
+
+      "indicator_minerals": ["Magnesium-Chlorite", "Phlogopite"],
+
+      "primary_band_um": 2.32,
+
+      "secondary_band_um": 1.65,
+
+      "absorption_depth_min": 0.05,
+
+      "fwhm_threshold_nm": 35.0,
+
+      "ratio_logic": "SWIR2 / SWIR1",
+
+      "probability_weight": 0.85,
+
+      "hex_color": "#00F2FF"
+
+    },
+
+    {
+
+      "name": "Quartz Vein (Host Rock)",
+
+      "indicator_minerals": ["Silica"],
+
+      "primary_band_um": 8.60,
+
+      "secondary_band_um": 9.10,
+
+      "absorption_depth_min": 0.12,
+
+      "fwhm_threshold_nm": 50.0,
+
+      "ratio_logic": "TIR1 / TIR2",
+
+      "probability_weight": 0.70,
+
+      "hex_color": "#E0E0E0"
+
+    }
+
+  ],
+
+  "calibration_presets": {
+
+    "iron_rich_soil": { "noise_reduction": 1.2, "offset_nm": 5 },
+
+    "sandy_desert": { "noise_reduction": 0.8, "offset_nm": 0 },
+
+    "tropical_vegetation": { "noise_reduction": 2.5, "offset_nm": -10 }
+
+  }
+
+}
