@@ -1,22 +1,16 @@
 name: omniscan-backend
-# Channel priority: conda-forge first for better compatibility and faster updates
 channels:
   - conda-forge
   - defaults
-
 dependencies:
-  # Core Python & Binary packages (Better handled by Conda)
   - python=3.10
   - numpy
   - httpx
   - pip
-  
-  # CI/CD & Testing tools
   - flake8
   - pytest
-  
-  # Web Framework & API (Handled by Pip for specific versioning)
   - pip:
       - fastapi==0.110.0
       - uvicorn==0.27.1
       - starlette
+      - python-multipart  # <--- ADD THIS LINE
