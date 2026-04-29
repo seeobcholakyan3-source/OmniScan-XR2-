@@ -1,4 +1,10 @@
-on: [push]
+name: Python Package using Conda
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
   build-linux:
@@ -10,36 +16,25 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # --- DEBUG STEP: This will print all files in your repo to the Action logs ---
-    - name: Check files in repo
-      run: |
-        echo "Listing all files in the root directory:"
-        ls -la
-        echo "Listing all files recursively to find environment.yml:"
-        find . -name "env*.y*ml"
-    # -----------------------------------------------------------------------------
-
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5 # Updated to v5 to fix Node.js deprecation warning
+    - name: Setup Conda Environment
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: '3.10'
-        
-    - name: Add conda to system path
-      run: |
-        echo $CONDA/bin >> $GITHUB_PATH
-        
-    - name: Install dependencies
-      run: |
-        # If your file is in a folder, change this to: --file folder_name/environment.yml
-        conda env update --file environment.yml --name base
-        
+        # Use the name defined in your environment.yml
+        activate-environment: omniscan-backend 
+        environment-file: environment.yml
+        auto-activate-base: false
+        use-mamba: true # Mamba is significantly faster than Conda for CI
+
     - name: Lint with flake8
+      # 'shell: bash -l {0}' is critical—it ensures the Conda env is activated
+      shell: bash -l {0}
       run: |
-        conda install flake8
+        # Stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings.
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        
+
     - name: Test with pytest
+      shell: bash -l {0}
       run: |
-        conda install pytest
         pytest
