@@ -14,3 +14,5 @@ dependencies:
       - uvicorn==0.27.1
       - starlette
       - python-multipart  # <--- ADD THIS LINE
+      - flask
+      - python-dotenv

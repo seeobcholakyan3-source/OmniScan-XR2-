@@ -1,0 +1,29 @@
+{
+    "python-envs.pythonProjects": [
+        {
+            "path": "venv/etc/conda/test-files/anyio/1",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        },
+        {
+            "path": "venv/lib/python3.1/site-packages/numpy/_core/tests/examples/cython",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        },
+        {
+            "path": "venv/lib/python3.10/site-packages/numpy/_core/tests/examples/cython",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        },
+        {
+            "path": "venv/lib/python3.1/site-packages/numpy/_core/tests/examples/limited_api",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        },
+        {
+            "path": "venv/lib/python3.10/site-packages/numpy/_core/tests/examples/limited_api",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ]
+}

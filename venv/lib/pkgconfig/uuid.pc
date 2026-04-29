@@ -1,0 +1,11 @@
+prefix=/workspaces/OmniScan-XR2/venv
+exec_prefix=/workspaces/OmniScan-XR2/venv
+libdir=/workspaces/OmniScan-XR2/venv/lib
+includedir=/workspaces/OmniScan-XR2/venv/include
+
+Name: uuid
+Description: Universally unique id library
+Version: 2.42.0
+Cflags: -I${includedir}/uuid
+Libs.private:  -lpthread
+Libs: -L${libdir} -luuid

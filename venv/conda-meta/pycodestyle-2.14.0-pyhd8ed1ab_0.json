@@ -1,0 +1,127 @@
+{
+  "name": "pycodestyle",
+  "version": "2.14.0",
+  "build": "pyhd8ed1ab_0",
+  "build_number": 0,
+  "channel": "https://conda.anaconda.org/conda-forge/noarch",
+  "subdir": "noarch",
+  "fn": "pycodestyle-2.14.0-pyhd8ed1ab_0.conda",
+  "md5": "85815c6a22905c080111ec8d56741454",
+  "url": "https://conda.anaconda.org/conda-forge/noarch/pycodestyle-2.14.0-pyhd8ed1ab_0.conda",
+  "sha256": "1950f71ff44e64163e176b1ca34812afc1a104075c3190de50597e1623eb7d53",
+  "depends": [
+    "python >=3.9"
+  ],
+  "constrains": [],
+  "noarch": "python",
+  "license": "MIT",
+  "package_type": "noarch_python",
+  "timestamp": 1750616054000,
+  "size": 35182,
+  "requested_spec": "None",
+  "package_tarball_full_path": "/opt/conda/pkgs/pycodestyle-2.14.0-pyhd8ed1ab_0.conda",
+  "extracted_package_dir": "/opt/conda/pkgs/pycodestyle-2.14.0-pyhd8ed1ab_0",
+  "files": [
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/INSTALLER",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/METADATA",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/RECORD",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/REQUESTED",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/WHEEL",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/direct_url.json",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/entry_points.txt",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/licenses/LICENSE",
+    "lib/python3.10/site-packages/pycodestyle-2.14.0.dist-info/top_level.txt",
+    "lib/python3.10/site-packages/pycodestyle.py",
+    "lib/python3.10/site-packages/__pycache__/pycodestyle.cpython-310.pyc",
+    "bin/pycodestyle"
+  ],
+  "paths_data": {
+    "paths_version": 1,
+    "paths": [
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/INSTALLER",
+        "path_type": "hardlink",
+        "sha256": "d0edee15f91b406f3f99726e44eb990be6e34fd0345b52b910c568e0eef6a2a8",
+        "size_in_bytes": 5,
+        "sha256_in_prefix": "d0edee15f91b406f3f99726e44eb990be6e34fd0345b52b910c568e0eef6a2a8"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/METADATA",
+        "path_type": "hardlink",
+        "sha256": "1b2abe819a1a8a81bef4e0eff9a75a88a451ad3fb726a59d9aaa7011b7ee9371",
+        "size_in_bytes": 4504,
+        "sha256_in_prefix": "1b2abe819a1a8a81bef4e0eff9a75a88a451ad3fb726a59d9aaa7011b7ee9371"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/RECORD",
+        "path_type": "hardlink",
+        "sha256": "925d8c0eca76865a6c520e34136ad32c28e97d3337ad8ce3acd7e0c4f111c149",
+        "size_in_bytes": 1011,
+        "sha256_in_prefix": "925d8c0eca76865a6c520e34136ad32c28e97d3337ad8ce3acd7e0c4f111c149"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/REQUESTED",
+        "path_type": "hardlink",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_in_bytes": 0,
+        "sha256_in_prefix": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/WHEEL",
+        "path_type": "hardlink",
+        "sha256": "24d5a1d459b551dc08415d3be609429f8315b8246cd2ca2d248abe27aadbc425",
+        "size_in_bytes": 109,
+        "sha256_in_prefix": "24d5a1d459b551dc08415d3be609429f8315b8246cd2ca2d248abe27aadbc425"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/direct_url.json",
+        "path_type": "hardlink",
+        "sha256": "46a42bfe2ab785cd6e0ef97e920ab28e308d7f49d2184551c6c650fc05e3f98b",
+        "size_in_bytes": 107,
+        "sha256_in_prefix": "46a42bfe2ab785cd6e0ef97e920ab28e308d7f49d2184551c6c650fc05e3f98b"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/entry_points.txt",
+        "path_type": "hardlink",
+        "sha256": "3302c4d20b88b7ae1a107b59cda12b650c0556c4785358e6ce7d4bfc2dd17d7a",
+        "size_in_bytes": 50,
+        "sha256_in_prefix": "3302c4d20b88b7ae1a107b59cda12b650c0556c4785358e6ce7d4bfc2dd17d7a"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/licenses/LICENSE",
+        "path_type": "hardlink",
+        "sha256": "f772295e81af3478d34e88e52d076200230ec7dd6a39e123bc5cb35aa66abdae",
+        "size_in_bytes": 1254,
+        "sha256_in_prefix": "f772295e81af3478d34e88e52d076200230ec7dd6a39e123bc5cb35aa66abdae"
+      },
+      {
+        "_path": "site-packages/pycodestyle-2.14.0.dist-info/top_level.txt",
+        "path_type": "hardlink",
+        "sha256": "ac76c81225e6bec274d7a98570b55c17f77e74a80fdd575f381e8259b8af66e8",
+        "size_in_bytes": 12,
+        "sha256_in_prefix": "ac76c81225e6bec274d7a98570b55c17f77e74a80fdd575f381e8259b8af66e8"
+      },
+      {
+        "_path": "site-packages/pycodestyle.py",
+        "path_type": "hardlink",
+        "sha256": "a14c299bb9f2251f7327fce593e7986b3bbb472e07b5d6b8ce3f2a0750325c00",
+        "size_in_bytes": 101885,
+        "sha256_in_prefix": "a14c299bb9f2251f7327fce593e7986b3bbb472e07b5d6b8ce3f2a0750325c00"
+      },
+      {
+        "_path": "lib/python3.10/site-packages/__pycache__/pycodestyle.cpython-310.pyc",
+        "path_type": "pyc_file",
+        "size_in_bytes": 69419
+      },
+      {
+        "_path": "bin/pycodestyle",
+        "path_type": "unix_python_entry_point",
+        "size_in_bytes": 243
+      }
+    ]
+  },
+  "link": {
+    "source": "/opt/conda/pkgs/pycodestyle-2.14.0-pyhd8ed1ab_0",
+    "type": 1
+  }
+}
