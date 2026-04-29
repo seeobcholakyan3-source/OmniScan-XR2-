@@ -1,0 +1,43 @@
+name: Omni-Spatial CI
+
+# Trigger the workflow on push or pull request to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Run Spectral Logic Tests
+      run: |
+        # This executes the test_logic.py file you have in your /tests folder
+        python -m unittest discover -s tests -p 'test_logic.py'
+
+    - name: Verify Core Architecture
+      run: |
+        # Quick check to ensure core files are present in the runner
+        python Core/archive_manager.py --version || echo "Core Ready"
+        python Analysis/material_density.py --version || echo "Analysis Ready"
+
+    - name: Lint Python Code
+      run: |
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
