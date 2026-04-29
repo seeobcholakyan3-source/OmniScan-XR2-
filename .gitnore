@@ -1,0 +1,53 @@
+# Security & Secrets (CRITICAL)
+.env
+.env.local
+keys.json
+credentials.yaml
+*.pem
+*.key
+*.token
+
+# NASA Data (Large Files)
+data/satellite_cache/
+*.geotiff
+*.nc
+*.h5
+
+# iOS / Xcode
+build/
+DerivedData/
+*.xcworkspace
+xcuserdata/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 3D Mapping & LiDAR
+*.usdz
+*.obj
+*.ply
+maps/cache/
+
+# System
+.DS_Store
+
+
+# OmniScan-XR Proprietary & Restricted Use License
+**Version:** 1.0
+**Copyright:** © 2026 Serob Cholakyan. All Rights Reserved.
+
+## 1. PURPOSE
+This License governs the use of the OmniScan-XR software. This Software is provided as "Source-Available" for educational and personal review purposes only.
+
+## 2. RESTRICTIONS
+* **Non-Commercial Use Only:** You may not use this Software for any commercial purpose.
+* **Non-Competition:** You are strictly prohibited from using the Software to compete with the Author.
+* **No Field Operations (Mining Clause):** Use of the Software for real-world mineral reconnaissance, mining, or drilling is strictly prohibited without written permission.
+* **No Redistribution:** You may not redistribute or mirror this Software on any public platform.
+
+## 3. PARTNER PERMITS
+Entities seeking a Field Operation Permit must submit a formal Project Intent Document. Authorized users will receive an encrypted `OMNISCAN_PERMIT_KEY`.
