@@ -1,24 +1,22 @@
 name: omniscan-backend
-# 1. Order of channels matters. conda-forge is generally more up-to-date and 
-# provides better support for Apple Silicon and Linux ARM.
+# Channel priority: conda-forge first for better compatibility and faster updates
 channels:
   - conda-forge
   - defaults
 
 dependencies:
-  # 2. Pin your Python version to at least the minor version for reproducibility.
+  # Core Python & Binary packages (Better handled by Conda)
   - python=3.10
-  
-  # 3. Use Conda for heavy binary dependencies (NumPy, SciPy, OpenSSL).
   - numpy
+  - httpx
   - pip
+  
+  # CI/CD & Testing tools
   - flake8
   - pytest
   
-  # 4. Use Pip ONLY for packages not found in Conda or for specific web frameworks.
+  # Web Framework & API (Handled by Pip for specific versioning)
   - pip:
-      # Use double-equals for strict versioning in production.
       - fastapi==0.110.0
       - uvicorn==0.27.1
-      # Example: if you use a specific bridge for Kotlin/Java interaction
-      # - pyjnius 
+      - starlette
