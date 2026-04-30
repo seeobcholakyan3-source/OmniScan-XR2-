@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROPRIETARY AND CONFIDENTIAL
-# OmniScan-XR System - Copyright (c) 2026 Serob Cholakyan
+# OmniScan-XR System - Copyright (c) 2026
 # This code is protected under the OmniScan-XR Proprietary License.
 # Commercial use or unauthorized field mining operations are strictly prohibited.
 # ==============================================================================
@@ -10,13 +10,19 @@ import stackstac
 
 
 class MineralSatelliteAnalytic:
+    """
+    Performs satellite‑based mineral detection using Sentinel‑2 and EMIT data.
+    """
+
     def __init__(self):
         """
         Initializes access to the 2026 NASA/ESA STAC Catalog.
         """
-        self.catalog = Client.open("https://earth-search.aws.element84.com/v1")
+        self.catalog = Client.open(
+            "https://earth-search.aws.element84.com/v1"
+        )
 
-    def analyze_area(self, lat, lon, buffer=0.01):
+    def analyze_area(self, lat: float, lon: float, buffer: float = 0.01) -> dict:
         """
         Analyzes a 1km square around the user's GPS for Gold and Diamond indicators.
 
@@ -41,7 +47,10 @@ class MineralSatelliteAnalytic:
         items = search.item_collection()
 
         # Red (B04), NIR (B08), SWIR1 (B11), SWIR2 (B12)
-        stack = stackstac.stack(items, assets=["B04", "B08", "B11", "B12"])
+        stack = stackstac.stack(
+            items,
+            assets=["B04", "B08", "B11", "B12"]
+        )
 
         # 1. Gold Alteration Index (Clay/Sericite): SWIR1 / SWIR2
         gold_index = stack.sel(band="B11") / stack.sel(band="B12")
