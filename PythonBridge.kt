@@ -32,7 +32,7 @@ import java.net.URL
 
 class PythonBridge {
 
-    private val backendUrl = "https://zany-tribble-96957gg4rg59f76pg-5001.app.github.dev/relay/lidar"
+    private val backendUrl = http://10.0.1.138.172.17.0.1:5001/api/scan/start
 
 
 
