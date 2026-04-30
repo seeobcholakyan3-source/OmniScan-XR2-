@@ -7,7 +7,9 @@ import os
 import requests
 from dotenv import load_dotenv
 
+
 load_dotenv()
+
 
 class NasaEarthData:
     def __init__(self):
@@ -18,12 +20,28 @@ class NasaEarthData:
             print("⚠️ WARNING: NASA_TOKEN missing. External API calls will fail.")
 
     def fetch_emit_data(self, lat, lon):
+        """
+        Fetches hyperspectral EMIT data for the given coordinates.
+
+        Args:
+            lat (float): Latitude.
+            lon (float): Longitude.
+
+        Returns:
+            dict: Simulated or authenticated response.
+        """
         if not self.token:
             return {"status": "offline_simulated", "data": None}
 
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
+
         print(f"🛰️ Authenticating with NASA Earthdata for coords: {lat}, {lon}...")
-        return {"status": "success", "data": "Hyperspectral_Cube_Loaded"}
+
+        # Placeholder for real NASA API call
+        return {
+            "status": "success",
+            "data": "Hyperspectral_Cube_Loaded",
+        }
