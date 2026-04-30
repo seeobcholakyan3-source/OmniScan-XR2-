@@ -1,0 +1,38 @@
+name: omniscan-xr2
+channels:
+  - conda-forge
+dependencies:
+  # Core runtime
+  - python=3.11
+  - pip
+
+  # Scientific / numeric stack
+  - numpy>=1.26
+  - scipy>=1.11
+  - pandas>=2.2
+
+  # Imaging / vision (common for XR / scanning pipelines)
+  - opencv>=4.9
+  - pillow>=10.2
+
+  # Visualization
+  - matplotlib>=3.8
+  - seaborn>=0.13
+
+  # Utilities
+  - tqdm>=4.66
+  - pyyaml>=6.0
+  - requests>=2.32
+
+  # Testing / tooling
+  - pytest>=8.1
+  - pytest-cov>=5.0
+  - black>=24.3
+  - ruff>=0.4
+
+  # Optional ML stack (safe defaults; remove if unused)
+  - scikit-learn>=1.5
+
+  # Pip-only packages (if needed)
+  - pip:
+      - rich>=13.7
