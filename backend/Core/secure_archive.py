@@ -5,62 +5,77 @@
 # Commercial use or unauthorized field mining operations are strictly prohibited.
 # ==============================================================================
 
-import os
 import sqlite3
-from cryptography.fernet import Fernet
+from fastapi import FastAPI, HTTPException
+from SecureArchive import SecureArchive
+
+app = FastAPI(
+    title="OmniScan-XR Backend API",
+    description="API for retrieving encrypted and decrypted mineral detection hits.",
+    version="1.0.0"
+)
+
+archive = SecureArchive()
 
 
-class SecureArchive:
-    """
-    Handles encrypted storage of mineral detection coordinates.
-    """
-
-    def __init__(self):
-        key_str = os.getenv("HIT_ENCRYPTION_KEY")
-
-        if not key_str:
-            self.key = Fernet.generate_key()
-        else:
-            self.key = key_str.encode()
-
-        self.cipher = Fernet(self.key)
-        self.db_path = os.path.join(
-            os.path.dirname(__file__),
-            "exploration.db"
-        )
-
-        self._init_db()
-
-    def _init_db(self):
-        """Initializes the SQLite database and table."""
-        conn = sqlite3.connect(self.db_path)
+def fetch_hits():
+    """Fetches all stored hits from the SQLite database."""
+    try:
+        conn = sqlite3.connect(archive.db_path)
         cursor = conn.cursor()
-
         cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS hits (
-                id INTEGER PRIMARY KEY,
-                encrypted_coords TEXT,
-                mineral TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-            """
+            "SELECT id, encrypted_coords, mineral, timestamp FROM hits ORDER BY timestamp DESC"
+        )
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@app.get("/hits", summary="Get encrypted scan results")
+def get_hits():
+    """
+    Returns all stored hits with encrypted coordinates.
+    """
+    rows = fetch_hits()
+    return [
+        {
+            "id": r[0],
+            "encrypted_coords": r[1],
+            "mineral": r[2],
+            "timestamp": r[3]
+        }
+        for r in rows
+    ]
+
+
+@app.get("/hits/decrypted", summary="Get decrypted scan results")
+def get_hits_decrypted():
+    """
+    Returns all stored hits with decrypted latitude/longitude coordinates.
+    """
+    rows = fetch_hits()
+
+    decrypted_results = []
+    for r in rows:
+        try:
+            decrypted_coords = archive.cipher.decrypt(r[1].encode()).decode()
+        except Exception:
+            decrypted_coords = "DECRYPTION_FAILED"
+
+        decrypted_results.append(
+            {
+                "id": r[0],
+                "coords": decrypted_coords,
+                "mineral": r[2],
+                "timestamp": r[3]
+            }
         )
 
-        conn.commit()
-        conn.close()
+    return decrypted_results
 
-    def log_hit(self, lat: float, lon: float, mineral: str):
-        """
-        Encrypts and stores a mineral detection event.
-        """
-        coords = f"{lat},{lon}"
-        encrypted = self.cipher.encrypt(coords.encode()).decode()
 
-        conn = sqlite3.connect(self.db_path)
-        conn.execute(
-            "INSERT INTO hits (encrypted_coords, mineral) VALUES (?, ?)",
-            (encrypted, mineral),
-        )
-        conn.commit()
-        conn.close()
+@app.get("/", summary="Health check")
+def root():
+    return {"status": "OK", "message": "OmniScan-XR backend is running"}
