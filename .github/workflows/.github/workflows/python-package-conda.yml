@@ -1,0 +1,51 @@
+name: Python Package using Conda
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Add Conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo "Source Conda"
+        echo $CONDA/bin >> $GITHUB_PATH
+
+    - name: Install Dependencies
+      run: |
+        conda env update --file backend/environment.yml --name base
+        pip install flake8 pytest httpx python-dotenv fastapi uvicorn
+
+    - name: Lint with flake8 (Strict Error Checking)
+      run: |
+        # This step STOPS the build if there are critical errors
+        # E9: Syntax errors, F63: Comparison errors, F7: Flow errors, F82: Undefined names
+        # Focused on ./backend and explicitly excluding venv to avoid 400+ false positives
+        flake8 ./backend --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,tests/
+
+    - name: Lint with flake8 (Style Warnings)
+      run: |
+        # This step provides feedback but does NOT stop the build (exit-zero)
+        # Keeps your code clean without blocking your mobile deployment
+        flake8 ./backend --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=venv
+
+    - name: Run Automated Tests with pytest
+      run: |
+        # Runs your backend tests
+        pytest backend/tests/
