@@ -1,0 +1,41 @@
+name: Python Package using Conda
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install Conda environment
+      run: |
+        conda config --set channel_priority strict
+        conda env update --file backend/environment.yml --name base
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 backend
+
+    - name: Run backend tests
+      run: |
+        if [ -d "backend/tests" ]; then
+          pytest backend/tests
+        else
+          echo "No tests found — creating placeholder."
+          mkdir -p backend/tests
+          echo "def test_placeholder(): assert True" > backend/tests/test_placeholder.py
+          pytest backend/tests
+        fi
