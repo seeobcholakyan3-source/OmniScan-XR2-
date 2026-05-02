@@ -5,8 +5,7 @@ OmniScan-XR is a professional-grade, sub-surface 3D mapping ecosystem designed f
 
 Built for the GitHub Codespaces environment, the system utilizes a high-performance cloud-relay architecture to process complex geological data while maintaining a lightweight footprint on mobile hardware.
 
-🛰️ Key Features
-AAA+ Voxel Engine: High-resolution sparse voxel mapping (5cm² precision) for deep-earth visualization.
+🛰️ Key Features Voxel Engine: High-resolution sparse voxel mapping (5cm² precision) for deep-earth visualization.
 Spectral Mineral Sonar: Real-time signal isolation using Fast Fourier Transforms (FFT) to detect Gold, Gems, and rare Earth elements.
 GPS-Anchored Archiving: Automatic geolocation tagging for every scan, stored in a persistent SQLite3 database.
 Cross-Reality Visualization: Exported .obj meshes with vertex coloring for instant AR viewing on iOS or immersive exploration in VR.
