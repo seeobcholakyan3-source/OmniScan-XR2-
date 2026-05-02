@@ -1,3 +1,11 @@
+/* ============================================================================
+ * PROPRIETARY AND CONFIDENTIAL
+ * OmniScan-XR2 System - Copyright (c) 2026 Serob Cholakyan
+ * This code is protected under the OmniScan-XR Proprietary License.
+ * Commercial use or unauthorized field mining operations are strictly prohibited.
+ * ============================================================================ */
+
+
 package com.omniscan.xr
 
 import androidx.compose.foundation.background
