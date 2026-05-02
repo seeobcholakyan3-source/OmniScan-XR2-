@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>OmniScan-XR2 VR Dashboard</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      
+      <a-assets>
+        <img id="earth-map" src="https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg">
+      </a-assets>
+
+      <a-sky color="#070b19"></a-sky> 
+
+      <a-sphere 
+        position="0 1.5 -4" 
+        radius="1.5" 
+        src="#earth-map"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+      </a-sphere>
+
+      <a-text 
+        id="data-readout"
+        value="Awaiting NASA Satellite Data..." 
+        position="0 3.5 -4" 
+        align="center" 
+        color="#00FF00">
+      </a-text>
+
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+      <a-entity laser-controls="hand: right"></a-entity>
+      <a-entity laser-controls="hand: left"></a-entity>
+
+    </a-scene>
+
+    <script>
+      async function fetchOmniScanData() {
+        try {
+          // Fetch data from your Python API
+          const response = await fetch('/api/satellite-data');
+          const data = await response.json();
+          
+          // Update the VR text with the incoming data
+          document.querySelector('#data-readout').setAttribute('value', 'System Online: ' + data.status);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+
+      // Call the function once the scene loads
+      document.querySelector('a-scene').addEventListener('loaded', fetchOmniScanData);
+    </script>
+  </body>
+</html>
