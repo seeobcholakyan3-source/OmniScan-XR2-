@@ -2,19 +2,20 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 from config import Config
-from core.geo_analyzer import GeoAnalyzer
-from core.dataset_builder import DatasetBuilder
+from core.logging import setup_logging
+from services.scan_engine import ScanEngine
 from services.nasa_client import NASAClient
-from services.storage import GeoStorage
-from utils.validators import validate_coordinates
+
+import logging
+
+setup_logging()
+logger = logging.getLogger("OmniScan-XR2")
 
 app = Flask(__name__)
 CORS(app)
 
-geo = GeoAnalyzer()
+engine = ScanEngine()
 nasa = NASAClient()
-db = GeoStorage()
-builder = DatasetBuilder()
 
 
 @app.route("/health")
@@ -24,35 +25,23 @@ def health():
 
 @app.route("/scan/<lat>/<lon>")
 def scan(lat, lon):
+    logger.info(f"Scan request: {lat}, {lon}")
 
-    valid, result = validate_coordinates(lat, lon)
-    if not valid:
-        return jsonify({"error": result}), 400
-
-    lat, lon = result
-
-    geo_data = geo.compute(lat, lon)
-    nasa_data = nasa.get_earth_imagery(lat, lon)
-
-    # ML-ready feature vector
-    feature_vector = builder.build_features(geo_data, nasa_data)
-
-    # persist scan
-    db.save_scan(lat, lon, geo_data, nasa_data)
+    geo_result = engine.analyze(lat, lon)
+    nasa_data = nasa.get_metadata(lat, lon)
 
     return jsonify({
-        "location": {"lat": lat, "lon": lon},
-        "geo_analysis": geo_data,
-        "nasa_data": nasa_data,
-        "feature_vector": feature_vector.tolist(),
-        "system": "OmniScan-XR2 Research Pipeline"
+        "geo": geo_result,
+        "external": nasa_data,
+        "system": "OmniScan-XR2-Core"
     })
 
 
-@app.route("/dataset")
-def dataset():
-    return jsonify(db.fetch_all())
+@app.errorhandler(500)
+def error(e):
+    return jsonify({"error": "internal_error"}), 500
 
 
 if __name__ == "__main__":
-    app.run(host=Config.HOST, port=Config.PORT, debug=Config.DEBUG)
+    logger.info(f"Starting server on port {Config.PORT}")
+    app.run(host="0.0.0.0", port=Config.PORT)
