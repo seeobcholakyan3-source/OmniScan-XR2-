@@ -1,5 +1,5 @@
 # =========================
-# CORE WEB FRAMEWORK
+# WEB FRAMEWORK
 # =========================
 Flask==3.0.3
 flask-cors==6.0.2
@@ -9,22 +9,35 @@ itsdangerous==2.2.0
 click==8.3.3
 
 # =========================
-# ENVIRONMENT MANAGEMENT
+# ENVIRONMENT CONFIG
 # =========================
 python-dotenv==1.0.1
 
 # =========================
-# HTTP / API INTEGRATION
+# HTTP / API LAYER
 # =========================
 requests==2.32.3
 urllib3==2.2.3
 certifi==2025.1.31
 
 # =========================
-# DATA / SCIENTIFIC STACK
-# (used for scan engine, geospatial math, signal processing)
+# DATA / NUMERICAL CORE
 # =========================
 numpy==2.1.1
+
+# =========================
+# DATABASE LAYER (SQL + GIS READY)
+# =========================
+SQLAlchemy==2.0.36
+psycopg2-binary==2.9.10
+geoalchemy2==0.15.2
+
+# =========================
+# GEOSPATIAL / SATELLITE PIPELINE
+# =========================
+rasterio==1.4.3
+shapely==2.0.6
+pyproj==3.7.0
 
 # =========================
 # TESTING
@@ -32,15 +45,15 @@ numpy==2.1.1
 pytest==8.3.3
 
 # =========================
-# SERVER (PRODUCTION OPTION)
+# PRODUCTION SERVER
 # =========================
 gunicorn==22.0.0
 
 # =========================
-# OPTIONAL (use only if you expand AI features later)
+# OPTIONAL FUTURE AI / ML LAYER
+# (uncomment when needed)
 # =========================
 # pandas==2.2.3
 # scipy==1.14.1
-SQLAlchemy==2.0.36
-psycopg2-binary==2.9.10
-geoalchemy2==0.15.2
+# scikit-learn==1.5.2
+# tensorflow==2.17.0
