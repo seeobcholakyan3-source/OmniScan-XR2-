@@ -2,12 +2,10 @@ import requests
 from config import Config
 
 class NASAClient:
-    """
-    Real Earth observation data client.
-    """
 
     def get_earth_imagery(self, lat, lon):
-        url = "https://api.nasa.gov/planetary/earth/imagery"
+
+        url = f"{Config.NASA_API_URL}/planetary/earth/imagery"
 
         params = {
             "lat": lat,
@@ -16,9 +14,14 @@ class NASAClient:
             "api_key": Config.NASA_API_KEY
         }
 
-        r = requests.get(url, params=params, timeout=15)
+        try:
+            r = requests.get(url, params=params, timeout=15)
 
-        return {
-            "status": r.status_code,
-            "data": r.json() if r.headers.get("content-type") == "application/json" else None
-        }
+            return {
+                "status_code": r.status_code,
+                "content_type": r.headers.get("content-type"),
+                "ok": r.status_code == 200
+            }
+
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
