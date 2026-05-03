@@ -1,0 +1,43 @@
+# =========================
+# CORE WEB FRAMEWORK
+# =========================
+Flask==3.0.3
+flask-cors==6.0.2
+Werkzeug==3.1.8
+Jinja2==3.1.6
+itsdangerous==2.2.0
+click==8.3.3
+
+# =========================
+# ENVIRONMENT MANAGEMENT
+# =========================
+python-dotenv==1.0.1
+
+# =========================
+# HTTP / API INTEGRATION
+# =========================
+requests==2.32.3
+urllib3==2.2.3
+certifi==2025.1.31
+
+# =========================
+# DATA / SCIENTIFIC STACK
+# (used for scan engine, geospatial math, signal processing)
+# =========================
+numpy==2.1.1
+
+# =========================
+# TESTING
+# =========================
+pytest==8.3.3
+
+# =========================
+# SERVER (PRODUCTION OPTION)
+# =========================
+gunicorn==22.0.0
+
+# =========================
+# OPTIONAL (use only if you expand AI features later)
+# =========================
+# pandas==2.2.3
+# scipy==1.14.1
