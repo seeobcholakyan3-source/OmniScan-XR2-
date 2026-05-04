@@ -1,0 +1,42 @@
+name: OmniScan-XR2 CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Validate Backend Imports
+        run: |
+          python -c "import OmniOrchestrator; print('Backend OK')"
+
+      - name: Validate Scan Engine
+        run: |
+          python -c "from backend.scan_engine import analyze_location; print('Scan Engine OK')"
+
+      - name: Environment Safety Check
+        run: |
+          echo "Checking environment variables..."
+          if [ -z "${{ secrets.NASA_API_KEY }}" ]; then
+            echo "⚠ NASA_API_KEY missing"
+          else
+            echo "✅ NASA_API_KEY detected"
+          fi
