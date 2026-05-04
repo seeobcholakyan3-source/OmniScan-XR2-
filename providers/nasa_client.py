@@ -1,28 +1,35 @@
-import os
 import requests
+from requests.auth import HTTPBasicAuth
+from config import Config
 
-NASA_API_KEY = os.getenv("5CJUyYN64yan5HgMDGqvZ1TNwzl9SbyOhZ8rlhs2")
+class NASAClient:
 
-BASE_URL = "https://api.nasa.gov/planetary/earth/imagery"
-
-def fetch_nasa_imagery(lat, lon):
-    params = {
-        "lat": lat,
-        "lon": lon,
-        "dim": 0.1,
-        "api_key": NASA_API_KEY
-    }
-
-    response = requests.get(BASE_URL, params=params, timeout=15)
-
-    if response.status_code != 200:
-        return {
-            "error": "NASA request failed",
-            "status_code": response.status_code
+    @staticmethod
+    def get_earth_imagery(lat, lon):
+        url = f"{Config.NASA_API_BASE}/planetary/earth/assets"
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "api_key": Config.NASA_API_KEY
         }
 
-    # NASA returns image URL metadata
-    return {
-        "image_url": response.url,
-        "source": "NASA_EARTH_IMAGERY"
-    }
+        res = requests.get(url, params=params, timeout=10)
+        res.raise_for_status()
+        return res.json()
+
+    @staticmethod
+    def get_emit_data():
+        # Example Earthdata protected endpoint
+        url = "https://data.lpdaac.earthdatacloud.nasa.gov/s3credentials"
+
+        res = requests.get(
+            url,
+            auth=HTTPBasicAuth(
+                Config.EARTHDATA_USERNAME,
+                Config.EARTHDATA_PASSWORD
+            ),
+            timeout=10
+        )
+
+        res.raise_for_status()
+        return res.json()
