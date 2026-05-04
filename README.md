@@ -16,9 +16,6 @@ OmniScan-XR2 provides a unified pipeline for:
 - Satellite imagery ingestion (NASA Earth APIs)
 - Terrain reconstruction (LiDAR-style abstraction)
 - Real-time 3D visualization of Earth data
-
-> ⚠️ This system is a scientific simulation framework. It does not directly access classified satellite intelligence.
-
 ---
 
 # 🧠 Architecture Overview
