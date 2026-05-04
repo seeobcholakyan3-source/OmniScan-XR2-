@@ -1,32 +1,115 @@
-name: Backend API Tests
+name: Backend CI Pipeline
 
 on:
   push:
-    paths:
-      - "backend/**"
+    branches: ["main", "dev"]
   pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-api:
+  backend-test:
+    name: Run Backend Tests
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      PYTHON_VERSION: "3.11"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      PIP_DISABLE_PIP_VERSION_CHECK: 1
+      PYTHONDONTWRITEBYTECODE: 1
 
-      - name: Setup Python
+    steps:
+      # 🔹 Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 🔹 Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Dependencies
-        run: pip install -r backend/requirements.txt
+      # 🔹 Cache dependencies
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Run Flask API Test
+      # 🔹 Install dependencies
+      - name: Install dependencies
+        working-directory: backend
         run: |
-          python -c "
-from backend.OmniOrchestrator import app
-client = app.test_client()
-response = client.get('/scan/34.05/-118.24')
-assert response.status_code == 200
-print('API TEST PASSED')
-"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 🔹 Install dev tools
+      - name: Install dev tools
+        working-directory: backend
+        run: |
+          pip install pytest flake8 bandit
+
+      # 🔹 Lint (code quality)
+      - name: Run lint checks
+        working-directory: backend
+        run: |
+          flake8 . --max-line-length=120 --exclude=venv,__pycache__
+
+      # 🔹 Security scan
+      - name: Run security scan
+        working-directory: backend
+        run: |
+          bandit -r . -ll
+
+      # 🔹 Create environment file securely
+      - name: Create .env file
+        working-directory: backend
+        run: |
+          echo "FLASK_ENV=testing" >> .env
+          echo "SECRET_KEY=test-secret" >> .env
+          echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+
+      # 🔹 Run tests
+      - name: Run pytest
+        working-directory: backend
+        run: |
+          pytest -v --tb=short
+
+      # 🔹 Start backend (background)
+      - name: Start backend server
+        working-directory: backend
+        run: |
+          nohup python OmniOrchestrator.py > server.log 2>&1 &
+          sleep 6
+
+      # 🔹 Health check endpoint
+      - name: Health check
+        run: |
+          curl -f http://127.0.0.1:5000/health
+
+      # 🔹 API functional test
+      - name: Test minerals endpoint
+        run: |
+          curl -f http://127.0.0.1:5000/api/minerals
+
+      # 🔹 Upload logs if failure
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-logs
+          path: backend/server.log
+
+      # 🔹 Upload test reports (future scaling)
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: backend/.pytest_cache
