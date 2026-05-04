@@ -1,0 +1,32 @@
+name: Backend API Tests
+
+on:
+  push:
+    paths:
+      - "backend/**"
+  pull_request:
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run Flask API Test
+        run: |
+          python -c "
+from backend.OmniOrchestrator import app
+client = app.test_client()
+response = client.get('/scan/34.05/-118.24')
+assert response.status_code == 200
+print('API TEST PASSED')
+"
