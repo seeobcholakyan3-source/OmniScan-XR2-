@@ -1,0 +1,47 @@
+name: NASA EMIT Data Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "backend/services/**"
+      - "backend/scan_engine.py"
+
+jobs:
+  emit-data-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r backend/requirements.txt
+
+      - name: Fetch NASA EMIT Sample Data
+        env:
+          NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
+        run: |
+          python backend/services/nasa_fetcher.py
+
+      - name: Validate Spectral Parsing
+        run: |
+          python - <<EOF
+from backend.scan_engine import analyze_location
+
+# Test coordinates (Los Angeles)
+lat, lon = 34.05, -118.24
+
+result = analyze_location(lat, lon)
+
+assert "signals" in result, "Missing signals"
+assert isinstance(result["signals"], list), "Signals not list"
+
+print("✅ Spectral parsing validated")
+EOF
