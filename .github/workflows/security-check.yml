@@ -1,0 +1,33 @@
+name: Security Scan
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for Hardcoded Secrets
+        run: |
+          echo "Scanning for exposed keys..."
+
+          if grep -r "NASA_SECRET" .; then
+            echo "❌ NASA_SECRET exposed"
+            exit 1
+          fi
+
+          if grep -r "AWS_SECRET" .; then
+            echo "❌ AWS_SECRET exposed"
+            exit 1
+          fi
+
+          echo "✅ No critical secrets found"
+
+      - name: Validate Env Usage
+        run: |
+          echo "Ensuring proper env usage..."
+          grep -r "os.getenv" backend/ || echo "No env usage detected"
