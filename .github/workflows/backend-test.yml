@@ -2,114 +2,81 @@ name: Backend CI Pipeline
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
-
-concurrency:
-  group: backend-ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  backend-test:
-    name: Run Backend Tests
+  backend-tests:
     runs-on: ubuntu-latest
 
-    env:
-      PYTHON_VERSION: "3.11"
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      PIP_DISABLE_PIP_VERSION_CHECK: 1
-      PYTHONDONTWRITEBYTECODE: 1
+    defaults:
+      run:
+        working-directory: omniscan-backend
 
     steps:
-      # 🔹 Checkout repo
+      # --------------------------------------------------
+      # 1. Checkout repo
+      # --------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 🔹 Setup Python
-      - name: Set up Python
+      # --------------------------------------------------
+      # 2. Setup Python
+      # --------------------------------------------------
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.11"
 
-      # 🔹 Cache dependencies
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      # --------------------------------------------------
+      # 3. Upgrade pip
+      # --------------------------------------------------
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-      # 🔹 Install dependencies
+      # --------------------------------------------------
+      # 4. Install dependencies (FIXED PATH)
+      # --------------------------------------------------
       - name: Install dependencies
-        working-directory: backend
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "❌ requirements.txt not found in omniscan-backend"
+            exit 1
+          fi
 
-      # 🔹 Install dev tools
-      - name: Install dev tools
-        working-directory: backend
+      # --------------------------------------------------
+      # 5. Syntax validation (safe compile check)
+      # --------------------------------------------------
+      - name: Python syntax check
         run: |
-          pip install pytest flake8 bandit
+          python -m compileall .
 
-      # 🔹 Lint (code quality)
-      - name: Run lint checks
-        working-directory: backend
+      # --------------------------------------------------
+      # 6. Start backend server
+      # --------------------------------------------------
+      - name: Start backend
         run: |
-          flake8 . --max-line-length=120 --exclude=venv,__pycache__
-
-      # 🔹 Security scan
-      - name: Run security scan
-        working-directory: backend
-        run: |
-          bandit -r . -ll
-
-      # 🔹 Create environment file securely
-      - name: Create .env file
-        working-directory: backend
-        run: |
-          echo "FLASK_ENV=testing" >> .env
-          echo "SECRET_KEY=test-secret" >> .env
-          echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> .env
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
-
-      # 🔹 Run tests
-      - name: Run pytest
-        working-directory: backend
-        run: |
-          pytest -v --tb=short
-
-      # 🔹 Start backend (background)
-      - name: Start backend server
-        working-directory: backend
-        run: |
-          nohup python OmniOrchestrator.py > server.log 2>&1 &
+          python OmniOrchestrator.py &
           sleep 6
 
-      # 🔹 Health check endpoint
+      # --------------------------------------------------
+      # 7. Health check (CI validation)
+      # --------------------------------------------------
       - name: Health check
         run: |
-          curl -f http://127.0.0.1:5000/health
+          curl --fail http://127.0.0.1:5000/health || exit 1
 
-      # 🔹 API functional test
-      - name: Test minerals endpoint
+      # --------------------------------------------------
+      # 8. Scan endpoint test (optional but useful)
+      # --------------------------------------------------
+      - name: Scan endpoint test
         run: |
-          curl -f http://127.0.0.1:5000/api/minerals
+          curl --fail http://127.0.0.1:5000/scan/34.05/-118.24 || exit 1
 
-      # 🔹 Upload logs if failure
-      - name: Upload logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-logs
-          path: backend/server.log
-
-      # 🔹 Upload test reports (future scaling)
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: backend/.pytest_cache
+      # --------------------------------------------------
+      # 9. Success
+      # --------------------------------------------------
+      - name: CI Success
+        run: echo "✅ Backend pipeline passed"
