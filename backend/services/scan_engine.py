@@ -4,148 +4,152 @@ import requests
 import numpy as np
 from datetime import datetime
 from dotenv import load_dotenv
+from PIL import Image
+from io import BytesIO
 
-# Load environment variables
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 NASA_API_KEY = os.getenv("NASA_API_KEY")
-NASA_EPIC_URL = "https://api.nasa.gov/EPIC/api/natural/images"
-NASA_EARTH_ASSETS_URL = "https://api.nasa.gov/planetary/earth/assets"
+NASA_ASSETS_URL = "https://api.nasa.gov/planetary/earth/assets"
 
 # ------------------------------------------------------------------------------
-# Utility: Validate coordinates
+# Validate coordinates
 # ------------------------------------------------------------------------------
 def validate_coordinates(lat, lon):
-    try:
-        lat = float(lat)
-        lon = float(lon)
-        if lat < -90 or lat > 90 or lon < -180 or lon > 180:
-            raise ValueError("Invalid coordinate range")
-        return lat, lon
-    except Exception as e:
-        raise ValueError(f"Invalid coordinates: {e}")
+    lat = float(lat)
+    lon = float(lon)
+
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        raise ValueError("Invalid lat/lon range")
+
+    return lat, lon
 
 # ------------------------------------------------------------------------------
-# Fetch NASA Earth asset metadata (real endpoint)
+# Fetch image URL from NASA
 # ------------------------------------------------------------------------------
-def fetch_nasa_earth_data(lat, lon):
+def fetch_satellite_image_url(lat, lon):
     params = {
         "lat": lat,
         "lon": lon,
+        "dim": 0.15,
         "api_key": NASA_API_KEY
     }
 
-    try:
-        response = requests.get(NASA_EARTH_ASSETS_URL, params=params, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+    response = requests.get(NASA_ASSETS_URL, params=params, timeout=10)
+    response.raise_for_status()
 
-        logger.info(f"NASA Earth API response received for {lat},{lon}")
-
-        return data
-
-    except requests.exceptions.RequestException as e:
-        logger.error(f"NASA API error: {e}")
-        return None
+    data = response.json()
+    return data.get("url"), data.get("date")
 
 # ------------------------------------------------------------------------------
-# Simulated spectral analysis (REALISTIC placeholder)
-# Replace later with EMIT / hyperspectral bands
+# Download image
 # ------------------------------------------------------------------------------
-def spectral_analysis_from_metadata(metadata):
+def download_image(url):
+    response = requests.get(url, timeout=15)
+    response.raise_for_status()
+
+    return Image.open(BytesIO(response.content)).convert("RGB")
+
+# ------------------------------------------------------------------------------
+# Extract spectral-like features from RGB
+# ------------------------------------------------------------------------------
+def extract_spectral_features(image):
     """
-    This is a realistic placeholder:
-    - Uses available metadata (date, cloud score, etc.)
-    - Converts into probabilistic mineral indicators
+    Approximate spectral analysis using RGB channels
+    (REALISTIC constraint: NASA public imagery is not hyperspectral)
     """
 
-    if not metadata:
-        return {
-            "gold_probability": 0.0,
-            "diamond_indicator": 0.0,
-            "confidence": 0.0
-        }
+    img = np.array(image)
 
-    # Extract signals (example)
-    date_str = metadata.get("date", "")
-    try:
-        date_obj = datetime.fromisoformat(date_str.replace("Z", ""))
-        seasonal_factor = (date_obj.month % 12) / 12
-    except:
-        seasonal_factor = 0.5
+    red = img[:, :, 0].astype(float)
+    green = img[:, :, 1].astype(float)
+    blue = img[:, :, 2].astype(float)
 
-    # Simulate spectral weights (replace with real EMIT bands later)
-    base_signal = np.clip(np.sin(seasonal_factor * np.pi), 0, 1)
+    # Normalize
+    red /= 255.0
+    green /= 255.0
+    blue /= 255.0
 
-    gold_probability = float(np.clip(base_signal * 0.6 + 0.2, 0, 1))
-    diamond_indicator = float(np.clip((1 - base_signal) * 0.4, 0, 1))
+    # Spectral indices (approximations)
+    iron_index = red / (green + 1e-5)
+    brightness = (red + green + blue) / 3
 
-    confidence = float(np.clip(0.5 + base_signal * 0.5, 0, 1))
+    features = {
+        "mean_red": float(np.mean(red)),
+        "mean_green": float(np.mean(green)),
+        "mean_blue": float(np.mean(blue)),
+        "iron_index": float(np.mean(iron_index)),
+        "brightness": float(np.mean(brightness)),
+    }
+
+    return features
+
+# ------------------------------------------------------------------------------
+# ML-style classifier (lightweight, no sklearn needed)
+# ------------------------------------------------------------------------------
+def mineral_classifier(features):
+    """
+    Lightweight deterministic model (Termux safe)
+    """
+
+    iron = features["iron_index"]
+    brightness = features["brightness"]
+
+    # Gold heuristic (iron-rich + reflective)
+    gold_probability = np.clip((iron * 0.6 + brightness * 0.4), 0, 1)
+
+    # Diamond heuristic (low iron, high brightness contrast)
+    diamond_indicator = np.clip((brightness * (1 - iron)), 0, 1)
+
+    confidence = np.clip((gold_probability + diamond_indicator) / 2, 0, 1)
 
     return {
-        "gold_probability": round(gold_probability, 3),
-        "diamond_indicator": round(diamond_indicator, 3),
-        "confidence": round(confidence, 3)
+        "gold_probability": round(float(gold_probability), 3),
+        "diamond_indicator": round(float(diamond_indicator), 3),
+        "confidence": round(float(confidence), 3)
     }
 
 # ------------------------------------------------------------------------------
-# Main scan function (used by Flask route)
+# MAIN PIPELINE
 # ------------------------------------------------------------------------------
 def run_scan(lat, lon):
-    logger.info(f"Starting scan for coordinates: {lat}, {lon}")
+    logger.info(f"Scan start: {lat}, {lon}")
 
     if not NASA_API_KEY:
-        raise RuntimeError("NASA_API_KEY not set in environment")
+        raise RuntimeError("NASA_API_KEY missing")
 
     lat, lon = validate_coordinates(lat, lon)
 
-    # Step 1: Fetch NASA metadata
-    metadata = fetch_nasa_earth_data(lat, lon)
+    # Step 1: Get image URL
+    image_url, date = fetch_satellite_image_url(lat, lon)
 
-    if not metadata:
-        return {
-            "status": "error",
-            "message": "Failed to fetch NASA data"
-        }
+    if not image_url:
+        return {"status": "error", "message": "No image available"}
 
-    # Step 2: Perform analysis
-    mineral_data = spectral_analysis_from_metadata(metadata)
+    # Step 2: Download image
+    image = download_image(image_url)
 
-    # Step 3: Build response
+    # Step 3: Extract features
+    features = extract_spectral_features(image)
+
+    # Step 4: Run classifier
+    minerals = mineral_classifier(features)
+
     result = {
         "status": "active",
-        "coordinates": {
-            "lat": lat,
-            "lon": lon
-        },
+        "coordinates": {"lat": lat, "lon": lon},
         "timestamp": datetime.utcnow().isoformat(),
-        "minerals": mineral_data,
-        "source": "NASA_EARTH_ASSETS_REAL",
-        "note": "Spectral model v1 (metadata-derived, EMIT upgrade pending)"
+        "image_source": image_url,
+        "date": date,
+        "features": features,
+        "minerals": minerals,
+        "source": "NASA_EARTH_RGB_ANALYSIS_V2",
+        "note": "RGB-derived spectral approximation (not true hyperspectral)"
     }
 
-    logger.info(f"Scan completed for {lat},{lon}")
+    logger.info("Scan complete")
 
     return result
-
-# ------------------------------------------------------------------------------
-# Future Upgrade Hook: EMIT Hyperspectral Integration
-# ------------------------------------------------------------------------------
-def ingest_emit_data(hyperspectral_cube):
-    """
-    Future:
-    - Accept EMIT spectral cube
-    - Perform real mineral classification
-    """
-
-    # Placeholder for future ML model
-    logger.warning("EMIT ingestion not implemented yet")
-
-    return {
-        "gold_probability": 0.0,
-        "diamond_indicator": 0.0,
-        "confidence": 0.0
-    }
