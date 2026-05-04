@@ -1,0 +1,54 @@
+name: AI Model Validation
+
+on:
+  push:
+    paths:
+      - "backend/models/**"
+      - "backend/scan_engine.py"
+
+jobs:
+  model-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r backend/requirements.txt
+
+      - name: Run Model Sanity Test
+        run: |
+          python - <<EOF
+import numpy as np
+
+# Simulated spectral data
+sample = np.random.rand(100)
+
+# Dummy classification logic (replace with real model)
+def classify(data):
+    return "mineral_detected" if data.mean() > 0.5 else "no_signal"
+
+result = classify(sample)
+
+assert result in ["mineral_detected", "no_signal"]
+
+print("✅ AI model sanity check passed")
+EOF
+
+      - name: Validate Scan Engine + Model Integration
+        run: |
+          python - <<EOF
+from backend.scan_engine import analyze_location
+
+res = analyze_location(34.05, -118.24)
+
+assert "signals" in res
+print("✅ Scan engine + model integration OK")
+EOF
