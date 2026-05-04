@@ -2,6 +2,7 @@ name: Security Scan
 
 on:
   push:
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -9,25 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Scan for Hardcoded Secrets
+      - name: Scan for exposed secrets
         run: |
-          echo "Scanning for exposed keys..."
+          echo "🔍 Scanning for exposed secrets..."
 
-          if grep -r "NASA_SECRET" .; then
-            echo "❌ NASA_SECRET exposed"
+          # Exclude safe directories
+          EXCLUDE_DIRS="--exclude-dir=.git --exclude-dir=.github --exclude-dir=venv --exclude-dir=__pycache__"
+
+          # Patterns to detect REAL secrets (not variable names)
+          FOUND=0
+
+          grep -r $EXCLUDE_DIRS -E "NASA_API_KEY\s*=\s*['\"]?[A-Za-z0-9]{20,}" . && FOUND=1 || true
+          grep -r $EXCLUDE_DIRS -E "AKIA[0-9A-Z]{16}" . && FOUND=1 || true
+          grep -r $EXCLUDE_DIRS -E "AIza[0-9A-Za-z\-_]{35}" . && FOUND=1 || true
+          grep -r $EXCLUDE_DIRS -E "sk-[A-Za-z0-9]{32,}" . && FOUND=1 || true
+
+          if [ $FOUND -eq 1 ]; then
+            echo "❌ Real secrets detected. Remove them immediately."
             exit 1
+          else
+            echo "✅ No exposed secrets found."
           fi
-
-          if grep -r "AWS_SECRET" .; then
-            echo "❌ AWS_SECRET exposed"
-            exit 1
-          fi
-
-          echo "✅ No critical secrets found"
-
-      - name: Validate Env Usage
-        run: |
-          echo "Ensuring proper env usage..."
-          grep -r "os.getenv" backend/ || echo "No env usage detected"
