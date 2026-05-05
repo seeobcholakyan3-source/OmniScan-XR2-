@@ -1,56 +1,79 @@
-from flask import Flask, jsonify
-import requests
+from flask import Flask, jsonify, request
 import logging
 import os
 
+# Your existing scan engine
+from scan_engine import scan_location
+
 app = Flask(__name__)
 
+# ----------------------------
+# LOGGING
+# ----------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OmniScan-XR2-Backend")
 
-NASA_API_KEY = "DEMO_KEY"  # replace with your key if you have one
-
-# Root endpoint
-@app.route("/")
+# ----------------------------
+# ROOT ENDPOINT
+# ----------------------------
+@app.route("/", methods=["GET"])
 def home():
     return jsonify({
         "service": "OmniScan-XR2",
         "status": "running"
     })
 
-# Health check
-@app.route("/health")
+# ----------------------------
+# HEALTH CHECK
+# ----------------------------
+@app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({
+        "status": "ok"
+    })
 
-# Scan endpoint
-@app.route("/scan/<lat>/<lon>")
+# ----------------------------
+# SCAN ENDPOINT (FIXED)
+# IMPORTANT: using string route for Termux stability
+# ----------------------------
+@app.route("/scan/<lat>/<lon>", methods=["GET"])
 def scan(lat, lon):
-    logger.info(f"Pinging NASA for coordinates: {lat}, {lon}")
-
-    url = "https://api.nasa.gov/planetary/earth/assets"
-
-    params = {
-        "lon": lon,
-        "lat": lat,
-        "api_key": NASA_API_KEY
-    }
-
     try:
-        response = requests.get(url, params=params, timeout=10)
-        data = response.json()
+        # Convert safely
+        lat = float(lat)
+        lon = float(lon)
+
+        logger.info(f"Pinging scan engine for coordinates: {lat}, {lon}")
+
+        # Call your scan engine
+        result = scan_location(lat, lon)
 
         return jsonify({
-            "input": {"lat": lat, "lon": lon},
-            "nasa_response": data
+            "input": {
+                "lat": lat,
+                "lon": lon
+            },
+            "result": result
         })
 
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Scan error: {str(e)}")
+        return jsonify({
+            "error": str(e),
+            "status": "failed"
+        }), 500
 
 
+# ----------------------------
+# START SERVER
+# ----------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+
     logger.info(f"Starting OmniScan-XR2 Backend on port {port}...")
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+    )
