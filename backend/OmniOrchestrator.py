@@ -1,79 +1,107 @@
-from flask import Flask, jsonify, request
-import logging
-import os
-
-# Your existing scan engine
-from scan_engine import scan_location
+from flask import Flask, jsonify
+import requests
 
 app = Flask(__name__)
 
-# ----------------------------
-# LOGGING
-# ----------------------------
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("OmniScan-XR2-Backend")
+# -----------------------------
+# CONFIG
+# -----------------------------
+NASA_API_KEY = "DEMO_KEY"  # replace later if you get real key
 
-# ----------------------------
-# ROOT ENDPOINT
-# ----------------------------
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({
-        "service": "OmniScan-XR2",
-        "status": "running"
-    })
-
-# ----------------------------
-# HEALTH CHECK
-# ----------------------------
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({
-        "status": "ok"
-    })
-
-# ----------------------------
-# SCAN ENDPOINT (FIXED)
-# IMPORTANT: using string route for Termux stability
-# ----------------------------
-@app.route("/scan/<lat>/<lon>", methods=["GET"])
-def scan(lat, lon):
+# -----------------------------
+# STEP 3: TERRAIN DATA (DEM)
+# -----------------------------
+def get_elevation(lat, lon):
+    url = f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{lon}"
     try:
-        # Convert safely
-        lat = float(lat)
-        lon = float(lon)
-
-        logger.info(f"Pinging scan engine for coordinates: {lat}, {lon}")
-
-        # Call your scan engine
-        result = scan_location(lat, lon)
-
-        return jsonify({
-            "input": {
-                "lat": lat,
-                "lon": lon
-            },
-            "result": result
-        })
-
-    except Exception as e:
-        logger.error(f"Scan error: {str(e)}")
-        return jsonify({
-            "error": str(e),
-            "status": "failed"
-        }), 500
+        r = requests.get(url, timeout=10).json()
+        return r["results"][0]["elevation"]
+    except:
+        return None
 
 
-# ----------------------------
-# START SERVER
-# ----------------------------
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-
-    logger.info(f"Starting OmniScan-XR2 Backend on port {port}...")
-
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=False
+# -----------------------------
+# STEP 2: NASA SATELLITE DATA
+# -----------------------------
+def get_nasa_imagery(lat, lon):
+    url = (
+        "https://api.nasa.gov/planetary/earth/assets"
+        f"?lon={lon}&lat={lat}&dim=0.10&api_key={NASA_API_KEY}"
     )
+    try:
+        r = requests.get(url, timeout=10).json()
+        return r
+    except:
+        return {"error": "NASA fetch failed"}
+
+
+# -----------------------------
+# STEP 4 + STEP 1: SCAN ENGINE
+# -----------------------------
+@app.route("/scan/<lat>/<lon>")
+def scan(lat, lon):
+    lat = float(lat)
+    lon = float(lon)
+
+    # TERRAIN
+    elevation = get_elevation(lat, lon)
+
+    # SATELLITE
+    satellite = get_nasa_imagery(lat, lon)
+
+    # SIMPLE DERIVED INTELLIGENCE (REALISTIC)
+    terrain_type = "unknown"
+    if elevation is not None:
+        if elevation < 50:
+            terrain_type = "lowland / basin"
+        elif elevation < 300:
+            terrain_type = "plain / urban zone"
+        else:
+            terrain_type = "high elevation terrain"
+
+    # STEP 4: FINAL STRUCTURED RESPONSE
+    return jsonify({
+        "query": {
+            "lat": lat,
+            "lon": lon
+        },
+        "terrain": {
+            "elevation_m": elevation,
+            "classification": terrain_type
+        },
+        "satellite": satellite,
+        "scan": {
+            "status": "complete",
+            "mode": "geo-intelligence-v1"
+        },
+        "sources": [
+            "NASA Earth API",
+            "Open-Elevation DEM"
+        ]
+    })
+
+
+# -----------------------------
+# STEP 5: SIMPLE WEB VIEW
+# -----------------------------
+@app.route("/")
+def home():
+    return """
+    <html>
+        <head><title>OmniGeo Scanner</title></head>
+        <body style="font-family: Arial;">
+            <h2>🌍 OmniGeo Intelligence System</h2>
+            <p>Use:</p>
+            <code>/scan/lat/lon</code>
+            <p>Example:</p>
+            <code>/scan/34.05/-118.24</code>
+        </body>
+    </html>
+    """
+
+
+# -----------------------------
+# RUN SERVER
+# -----------------------------
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
